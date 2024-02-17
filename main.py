@@ -10,13 +10,13 @@ import re
 def getenv(var):
     return os.environ.get(var) or DATA.get(var, None)
 
-bot_token = getenv("TOKEN")
-api_hash = getenv("HASH")
-api_id = getenv("ID")
+bot_token = "6528614225:AAEDDJPw-Vo2ugNysc-KNEwI0PbGVLr-8W4"
+api_hash = "1fda88a5d1de46058a4791c78bce198e"
+api_id = "26075120"
 
 bot = Client("mybot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
 
-ss = getenv("STRING")
+ss = "BQGTAMIAR4zoIC9BA_RknKtmL84JbTv0xpp1bP_Okff6RdbjazQ6l4FsXNdZRPmk65QRChkrhx8GEIKSGAUnwZ60o2i7Cy8WGUeKtNg-zWmx9n1nSZawTxuUdWYEOD15r3kgcyMbzkLdymzjAuH-D4mCfinUlh2FYpTcTe47M9WZzRJJUnkbMRWsBXaJYVU2iKlaiD5HYeQRcP_JFKh9JzVjBACdgXTLIsKlzpIf4wYDoA03Khriu0j80gDx_VnRwO81KsKi9N7d4rwoTS-ErTGvVS70bWKxyxfdYHDp7NRgUEUCw61IUNQweuPoms2z3CqTvtCA9smpcKxSZ0O3cXYUUF20hQAAAAGGgvMwAA"
 acc = Client("myacc", api_id=api_id, api_hash=api_hash, session_string=ss) if ss else None
 
 def downstatus(statusfile, message):
