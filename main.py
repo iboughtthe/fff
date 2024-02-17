@@ -2,113 +2,88 @@ import pyrogram
 from pyrogram import Client, filters
 from pyrogram.errors import UserAlreadyParticipant, InviteHashExpired, UsernameNotOccupied
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-
 import time
 import os
-import threading
 import json
+import re
 
-with open('config.json', 'r') as f: DATA = json.load(f)
-def getenv(var): return os.environ.get(var) or DATA.get(var, None)
+def getenv(var):
+    return os.environ.get(var) or DATA.get(var, None)
 
-bot_token = getenv("TOKEN") 
-api_hash = getenv("HASH") 
+bot_token = getenv("TOKEN")
+api_hash = getenv("HASH")
 api_id = getenv("ID")
+
 bot = Client("mybot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
 
 ss = getenv("STRING")
-if ss is not None:
-	acc = Client("myacc" ,api_id=api_id, api_hash=api_hash, session_string=ss)
-	acc.start()
-else: acc = None
+acc = Client("myacc", api_id=api_id, api_hash=api_hash, session_string=ss) if ss else None
 
-# download status
-def downstatus(statusfile,message):
-	while True:
-		if os.path.exists(statusfile):
-			break
+def downstatus(statusfile, message):
+    while True:
+        if os.path.exists(statusfile):
+            break
 
-	time.sleep(3)      
-	while os.path.exists(statusfile):
-		with open(statusfile,"r") as downread:
-			txt = downread.read()
-		try:
-			bot.edit_message_text(message.chat.id, message.id, f"__Downloaded__ : **{txt}**")
-			time.sleep(10)
-		except:
-			time.sleep(5)
+    time.sleep(3)
+    while os.path.exists(statusfile):
+        with open(statusfile, "r") as downread:
+            txt = downread.read()
+        try:
+            bot.edit_message_text(message.chat.id, message.id, f"__Downloaded__ : **{txt}**")
+            time.sleep(10)
+        except:
+            time.sleep(5)
 
+def upstatus(statusfile, message):
+    while True:
+        if os.path.exists(statusfile):
+            break
 
-# upload status
-def upstatus(statusfile,message):
-	while True:
-		if os.path.exists(statusfile):
-			break
+    time.sleep(3)
+    while os.path.exists(statusfile):
+        with open(statusfile, "r") as upread:
+            txt = upread.read()
+        try:
+            bot.edit_message_text(message.chat.id, message.id, f"__Uploaded__ : **{txt}**")
+            time.sleep(10)
+        except:
+            time.sleep(5)
 
-	time.sleep(3)      
-	while os.path.exists(statusfile):
-		with open(statusfile,"r") as upread:
-			txt = upread.read()
-		try:
-			bot.edit_message_text(message.chat.id, message.id, f"__Uploaded__ : **{txt}**")
-			time.sleep(10)
-		except:
-			time.sleep(5)
-
-
-# progress writter
 def progress(current, total, message, type):
-	with open(f'{message.id}{type}status.txt',"w") as fileup:
-		fileup.write(f"{current * 100 / total:.1f}%")
+    with open(f'{message.id}{type}status.txt', "w") as fileup:
+        fileup.write(f"{current * 100 / total:.1f}%")
 
-
-# start command
 @bot.on_message(filters.command(["start"]))
-def send_start(client: pyrogram.client.Client, message: pyrogram.types.messages_and_media.message.Message):
-	bot.send_message(message.chat.id, f"__👋 Hi **{message.from_user.mention}**, I am Save Restricted Bot, I can send you restricted content by it's post link__\n\n{USAGE}",
-	reply_markup=InlineKeyboardMarkup([[ InlineKeyboardButton("🌐 Source Code", url="https://github.com/bipinkrish/Save-Restricted-Bot")]]), reply_to_message_id=message.id)
+def send_start(client, message):
+    bot.send_message(message.chat.id, f"__👋 Hi **{message.from_user.mention}**, I am Save Restricted Bot, I can send you restricted content by it's post link__\n\n{USAGE}", reply_markup=InlineKeyboardMarkup([[ InlineKeyboardButton("🌐 Source Code", url=")]]), reply_to_message_id=message.id)
 
+@bot.on_message(filters.text & (filters.document | filters.audio | filters.video))
+def save(client, message):
+    if "https://t.me/" in message.text:
+        datas = message.text.split("/")
+        temp = datas[-1].replace("?single", "").split("-")
+        fromID = int(temp[0].strip())
+        try:
+            toID = int(temp[1].strip())
+        except:
+            toID = fromID
 
-@bot.on_message(filters.text)
-def save(client: pyrogram.client.Client, message: pyrogram.types.messages_and_media.message.Message):
-	print(message.text)
+        for msgid in range(fromID, toID + 1):
 
-	# joining chats
-	if "https://t.me/+" in message.text or "https://t.me/joinchat/" in message.text:
+            # private
+            if "https://t.me/c/" in message.text:
+                chatid = int("-100" + datas[4])
 
-		if acc is None:
-			bot.send_message(message.chat.id,f"**String Session is not Set**", reply_to_message_id=message.id)
-			return
+                if acc is None:
+                    bot.send_message(message.chat.id, f"**String Session is not Set**", reply_to_message_id=message.id)
+                    return
 
-		try:
-			try: acc.join_chat(message.text)
-			except Exception as e: 
-				bot.send_message(message.chat.id,f"**Error** : __{e}__", reply_to_message_id=message.id)
-				return
-			bot.send_message(message.chat.id,"**Chat Joined**", reply_to_message_id=message.id)
-		except UserAlreadyParticipant:
-			bot.send_message(message.chat.id,"**Chat alredy Joined**", reply_to_message_id=message.id)
-		except InviteHashExpired:
-			bot.send_message(message.chat.id,"**Invalid Link**", reply_to_message_id=message.id)
+                msg = acc.get_messages(chatid, msgid)
+                msg_type = get_message_type(msg)
 
-	# getting message
-	elif "https://t.me/" in message.text:
-
-		datas = message.text.split("/")
-		temp = datas[-1].replace("?single","").split("-")
-		fromID = int(temp[0].strip())
-		try: toID = int(temp[1].strip())
-		except: toID = fromID
-
-		for msgid in range(fromID, toID+1):
-
-			# private
-			if "https://t.me/c/" in message.text:
-				chatid = int("-100" + datas[4])
-				
-				if acc is None:
-					bot.send_message(message.chat.id,f"**String Session is not Set**", reply_to_message_id=message.id)
-					return
+                if msg_type in ("Video", "Audio", "Document"):
+                    download = bot.send_message(message.chat.id, "Downloading file...", reply_to_message_id=message.id)
+                    file = acc.download_media
 				
 				handle_private(message,chatid,msgid)
 				# try: handle_private(message,chatid,msgid)
