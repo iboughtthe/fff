@@ -2,65 +2,70 @@ import pyrogram
 from pyrogram import Client, filters
 from pyrogram.errors import UserAlreadyParticipant, InviteHashExpired, UsernameNotOccupied
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
 import time
 import os
+import threading
 import json
-import re
 
 def getenv(var):
     return os.environ.get(var) or DATA.get(var, None)
 
-bot_token = "6528614225:AAEDDJPw-Vo2ugNysc-KNEwI0PbGVLr-8W4"
-api_hash = "1fda88a5d1de46058a4791c78bce198e"
-api_id = "26075120"
+bot_token = getenv("TOKEN")
+api_hash = getenv("HASH")
+api_id = getenv("ID")
 
 bot = Client("mybot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
 
-ss = "BQGTAMIAR4zoIC9BA_RknKtmL84JbTv0xpp1bP_Okff6RdbjazQ6l4FsXNdZRPmk65QRChkrhx8GEIKSGAUnwZ60o2i7Cy8WGUeKtNg-zWmx9n1nSZawTxuUdWYEOD15r3kgcyMbzkLdymzjAuH-D4mCfinUlh2FYpTcTe47M9WZzRJJUnkbMRWsBXaJYVU2iKlaiD5HYeQRcP_JFKh9JzVjBACdgXTLIsKlzpIf4wYDoA03Khriu0j80gDx_VnRwO81KsKi9N7d4rwoTS-ErTGvVS70bWKxyxfdYHDp7NRgUEUCw61IUNQweuPoms2z3CqTvtCA9smpcKxSZ0O3cXYUUF20hQAAAAGGgvMwAA"
-acc = Client("myacc", api_id=api_id, api_hash=api_hash, session_string=ss) if ss else None
+ss = getenv("STRING")
+if ss is not None:
+    acc = Client("myacc", api_id=api_id, api_hash=api_hash, session_string=ss)
+    acc.start()
+else:
+    acc = None
 
 def downstatus(statusfile, message):
     while True:
         if os.path.exists(statusfile):
             break
 
-    time.sleep(3)
-    while os.path.exists(statusfile):
-        with open(statusfile, "r") as downread:
-            txt = downread.read()
-        try:
-            bot.edit_message_text(message.chat.id, message.id, f"__Downloaded__ : **{txt}**")
-            time.sleep(10)
-        except:
-            time.sleep(5)
+        time.sleep(3)
+
+        while os.path.exists(statusfile):
+            with open(statusfile, "r") as downread:
+                txt = downread.read()
+            try:
+                bot.edit_message_text(message.chat.id, message.id, f"__Downloaded__ : **{txt}**")
+                time.sleep(10)
+            except:
+                time.sleep(5)
 
 def upstatus(statusfile, message):
     while True:
         if os.path.exists(statusfile):
             break
 
-    time.sleep(3)
-    while os.path.exists(statusfile):
-        with open(statusfile, "r") as upread:
-            txt = upread.read()
-        try:
-            bot.edit_message_text(message.chat.id, message.id, f"__Uploaded__ : **{txt}**")
-            time.sleep(10)
-        except:
-            time.sleep(5)
+        time.sleep(3)
+
+        while os.path.exists(statusfile):
+            with open(statusfile, "r") as upread:
+                txt = upread.read()
+            try:
+                bot.edit_message_text(message.chat.id, message.id, f"__Uploaded__ : **{txt}**")
+                time.sleep(10)
+            except:
+                time.sleep(5)
 
 def progress(current, total, message, type):
     with open(f'{message.id}{type}status.txt', "w") as fileup:
         fileup.write(f"{current * 100 / total:.1f}%")
 
 @bot.on_message(filters.command(["start"]))
-def send_start(client, message):
-     bot.send_message(message.chat.id, f"__👋 Hi **{message.from_user.mention}**, I am Save Restricted Bot, I can send you restricted content by it's post link__\n\n{USAGE}",
-     reply_markup=InlineKeyboardMarkup([[ InlineKeyboardButton("🌐 Source Code", url=")]]), reply_to_message_id=message.id)
+def send_start(client: pyrogram.client.Client, message: pyrogram.types.messages_and_media.message.Message):
+    bot.send_message(message.chat.id, f"__👋 Hi **{message.from_user.mention}**, I am Save Restricted Bot, I can send you restricted content by it's post link__\n\n{USAGE}", reply_markup=InlineKeyboardMarkup([[ InlineKeyboardButton("🌐 Source Code", url="https://github.com/bipinkrish/Save-Restricted-Bot")]]), reply_to_message_id=message.id)
 
-
-							       
-def save(client, message):
+@bot.on_message(filters.text & (filters.document | filters.audio | filters.video))
+def save(client: pyrogram.client.Client, message: pyrogram.types.messages_and_media.message.Message):
     if "https://t.me/" in message.text:
         datas = message.text.split("/")
         temp = datas[-1].replace("?single", "").split("-")
@@ -77,8 +82,9 @@ def save(client, message):
                 chatid = int("-100" + datas[4])
 
                 if acc is None:
-                    bot.send_message(message.chat.id, f"**String Session is not Set**", reply_to_message_id=message.id)
+                    bot.send_message(message.chat.id,f"**String Session is not Set**", reply_to_message_id=message.id)
                     return
+
 
                 msg = acc.get_messages(chatid, msgid)
                 msg_type = get_message_type(msg)
