@@ -93,12 +93,17 @@ def save(client: pyrogram.client.Client, message: pyrogram.types.messages_and_me
                     download = bot.send_message(message.chat.id, "Downloading file...", reply_to_message_id=message.id)
                     file = acc.download_media
 				
-				def handle_private(message, chatid, msgid):
-				try:
-				    # Your code here
-        
-				except Exception as e:
-                    bot.send_message(message.chat.id, f"**Error** : __{e}__", reply_to_message_id=message.id)
+	def handle_private(message, chatid, msgid):
+            # Get the user's message text
+                message_text = message.text
+
+            # Handle the message according to its content
+                if message_text == "/start":
+                bot.send_message(chatid, "Hi! Welcome to my bot.")
+                elif message_text == "/help":
+                bot.send_message(chatid, "Here's a list of available commands: /start, /help")
+            else:
+                bot.send_message(chatid, "Sorry, I don't understand that command.")
 			
 			# bot
 			elif "https://t.me/b/" in message.text:
