@@ -55,9 +55,11 @@ def progress(current, total, message, type):
 
 @bot.on_message(filters.command(["start"]))
 def send_start(client, message):
-    bot.send_message(message.chat.id, f"__👋 Hi **{message.from_user.mention}**, I am Save Restricted Bot, I can send you restricted content by it's post link__\n\n{USAGE}", reply_markup=InlineKeyboardMarkup([[ InlineKeyboardButton("🌐 Source Code", url=")]]), reply_to_message_id=message.id)
+     bot.send_message(message.chat.id, f"__👋 Hi **{message.from_user.mention}**, I am Save Restricted Bot, I can send you restricted content by it's post link__\n\n{USAGE}",
+     reply_markup=InlineKeyboardMarkup([[ InlineKeyboardButton("🌐 Source Code", url=")]]), reply_to_message_id=message.id)
 
-@bot.on_message(filters.text & (filters.document | filters.audio | filters.video))
+
+							       
 def save(client, message):
     if "https://t.me/" in message.text:
         datas = message.text.split("/")
