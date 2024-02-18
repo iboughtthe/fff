@@ -17,7 +17,7 @@ api_id = "26075120"
 
 bot = Client("mybot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
 
-ss = "BQGTAMIAR4zoIC9BA_RknKtmL84JbTv0xpp1bP_Okff6RdbjazQ6l4FsXNdZRPmk65QRChkrhx8GEIKSGAUnwZ60o2i7Cy8WGUeKtNg-zWmx9n1nSZawTxuUdWYEOD15r3kgcyMbzkLdymzjAuH-D4mCfinUlh2FYpTcTe47M9WZzRJJUnkbMRWsBXaJYVU2iKlaiD5HYeQRcP_JFKh9JzVjBACdgXTLIsKlzpIf4wYDoA03Khriu0j80gDx_VnRwO81KsKi9N7d4rwoTS-ErTGvVS70bWKxyxfdYHDp7NRgUEUCw61IUNQweuPoms2z3CqTvtCA9smpcKxSZ0O3cXYUUF20hQAAAAGGgvMwAA"
+ss = ""
 if ss is not None:
     acc = Client("myacc", api_id=api_id, api_hash=api_hash, session_string=ss)
     acc.start()
